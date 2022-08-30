@@ -29,7 +29,8 @@ jobs:
       run: dotnet publish EvtcExport --configuration Release -r win-x64 --self-contained=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -o artifacts/win64/
     - name: Package (Linux)
       run: dotnet publish EvtcExport --configuration Release -r linux-x64 --self-contained=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -o artifacts/linux64/
-      
+    - name: Package (macOS)
+      run: dotnet publish EvtcExport --configuration Release -r osx-x64 --self-contained=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -o artifacts/macos/
     - name: Upload (Windows)
       uses: actions/upload-artifact@v2
       with:
@@ -40,3 +41,8 @@ jobs:
       with:
         name: EvtcExport (Linux)
         path: artifacts/linux64/EvtcExport
+    - name: Upload (macOS)
+      uses: actions/upload-artifact@v2
+      with:
+        name: EvtcExport (macOS)
+        path: artifacts/macos/EvtcExport
