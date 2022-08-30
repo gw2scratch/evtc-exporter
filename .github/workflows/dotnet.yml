@@ -1,0 +1,40 @@
+name: .NET
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+    - name: Package (Windows)
+      run: dotnet publish EvtcExport --configuration Release -r win-x64 --self-contained=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -o artifacts/win64/
+    - name: Package (Linux)
+      run: dotnet publish EvtcExport --configuration Release -r linux-x64 --self-contained=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -o artifacts/linux64/
+      
+    - name: Upload (Windows)
+      uses: actions/upload-artifact@v2
+      with:
+        name: EvtcExport (Windows)
+        path: artifacts/win64/EvtcExport.exe
+    - name: Upload (Linux)
+      uses: actions/upload-artifact@v2
+      with:
+        name: EvtcExport (Linux)
+        path: artifacts/linux64/EvtcExport.exe
