@@ -39,4 +39,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: EvtcExport (Linux)
-        path: artifacts/linux64/EvtcExport.exe
+        path: artifacts/linux64/EvtcExport
