@@ -20,30 +20,32 @@ var hitEvents = log.Events.OfType<PhysicalDamageEvent>().GroupBy(x => x.Attacker
 var exposedResults = new[]
     { PhysicalDamageEvent.Result.Normal, PhysicalDamageEvent.Result.Critical, PhysicalDamageEvent.Result.Glance };
 
-var attackers = hitEvents.Select(x =>
-{
-    var hits = x.Where(e => exposedResults.Contains(e.HitResult)).Select(e => new PhysicalHit(
-        e.Time - minTime,
-        e.Skill.Id,
-        e.Damage,
-        e.HitResult switch
-        {
-            PhysicalDamageEvent.Result.Normal => HitResult.Normal,
-            PhysicalDamageEvent.Result.Critical => HitResult.Critical,
-            PhysicalDamageEvent.Result.Glance => HitResult.Glance,
-            _ => throw new ArgumentOutOfRangeException()
-        })).ToList();
-
-    var attacker = x.Key switch
+var attackers = hitEvents
+    .Where(x => x.Key != null)
+    .Select(x =>
     {
-        Player player => new Attacker(player.Name, AttackerType.Player, player.AccountName[1..], hits),
-        NPC npc => new Attacker(npc.Name, AttackerType.NPC, null, hits),
-        Gadget gadget => new Attacker(gadget.Name, AttackerType.Gadget, null, hits),
-        _ => throw new ArgumentOutOfRangeException()
-    };
+        var hits = x.Where(e => exposedResults.Contains(e.HitResult)).Select(e => new PhysicalHit(
+            e.Time - minTime,
+            e.Skill.Id,
+            e.Damage,
+            e.HitResult switch
+            {
+                PhysicalDamageEvent.Result.Normal => HitResult.Normal,
+                PhysicalDamageEvent.Result.Critical => HitResult.Critical,
+                PhysicalDamageEvent.Result.Glance => HitResult.Glance,
+                _ => throw new ArgumentOutOfRangeException()
+            })).ToList();
 
-    return attacker;
-}).ToList();
+        var attacker = x.Key switch
+        {
+            Player player => new Attacker(player.Name, AttackerType.Player, player.AccountName[1..], hits),
+            NPC npc => new Attacker(npc.Name, AttackerType.NPC, null, hits),
+            Gadget gadget => new Attacker(gadget.Name, AttackerType.Gadget, null, hits),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        return attacker;
+    }).ToList();
 
 Console.WriteLine(JsonSerializer.Serialize(attackers));
 
@@ -64,6 +66,8 @@ enum HitResult
     // Ignores and interrupts are not exposed.
 }
 
-record PhysicalHit(long Time, uint SkillId, int Damage, [property: JsonConverter(typeof(JsonStringEnumConverter))] HitResult Result);
+record PhysicalHit(long Time, uint SkillId, int Damage, [property: JsonConverter(typeof(JsonStringEnumConverter))]
+    HitResult Result);
 
-record Attacker(string Name, [property: JsonConverter(typeof(JsonStringEnumConverter))] AttackerType Type, string? Account, List<PhysicalHit> Hits);
+record Attacker(string Name, [property: JsonConverter(typeof(JsonStringEnumConverter))]
+    AttackerType Type, string? Account, List<PhysicalHit> Hits);
