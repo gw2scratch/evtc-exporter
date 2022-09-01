@@ -14,6 +14,9 @@ if (args.Length < 1)
 var filename = args[0];
 var log = new LogProcessor().ProcessLog(filename, new EVTCParser());
 
+var encounter = log.EncounterData.Encounter.ToString();
+var pointOfView = log.PointOfView.Name;
+
 var minTime = log.Events.Select(x => x.Time).Min();
 var hitEvents = log.Events.OfType<PhysicalDamageEvent>().GroupBy(x => x.Attacker);
 
@@ -48,7 +51,7 @@ var attackers = hitEvents
         return attacker;
     }).ToList();
 
-Console.WriteLine(JsonSerializer.Serialize(attackers));
+Console.WriteLine(JsonSerializer.Serialize(new ExportData(attackers, encounter, pointOfView)));
 
 return 0;
 
@@ -72,3 +75,5 @@ record PhysicalHit(long Time, uint SkillId, string Name, int Damage, [property: 
 
 record Attacker(string Name, [property: JsonConverter(typeof(JsonStringEnumConverter))]
     AttackerType Type, string? Account, List<PhysicalHit> Hits);
+
+record ExportData(List<Attacker> Attackers, string Encounter, string PointOfView);
