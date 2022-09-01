@@ -27,6 +27,7 @@ var attackers = hitEvents
         var hits = x.Where(e => exposedResults.Contains(e.HitResult)).Select(e => new PhysicalHit(
             e.Time - minTime,
             e.Skill.Id,
+            e.Skill.Name,
             e.Damage,
             e.HitResult switch
             {
@@ -66,7 +67,7 @@ enum HitResult
     // Ignores and interrupts are not exposed.
 }
 
-record PhysicalHit(long Time, uint SkillId, int Damage, [property: JsonConverter(typeof(JsonStringEnumConverter))]
+record PhysicalHit(long Time, uint SkillId, string Name, int Damage, [property: JsonConverter(typeof(JsonStringEnumConverter))]
     HitResult Result);
 
 record Attacker(string Name, [property: JsonConverter(typeof(JsonStringEnumConverter))]
